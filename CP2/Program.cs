@@ -4,13 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CP2
+
+class Program
 {
-    class Program
+    int ownNumber;
+
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        Program p = new Program();
+
+        p.Initialize();
+    }
+
+    public void Initialize()
+    {
+        string[] input = Console.ReadLine().Split(' ');
+        ownNumber = int.Parse(input[0]);
+
+        for (int i = 0; i < input.Length; i++)
         {
-            //Ewa
+            //read nodenumbers
         }
     }
 }
+
