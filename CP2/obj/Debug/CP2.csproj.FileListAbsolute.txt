@@ -1,7 +1,0 @@
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\bin\Debug\CP2.exe.config
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\bin\Debug\CP2.exe
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\bin\Debug\CP2.pdb
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\obj\Debug\CP2.csprojAssemblyReference.cache
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\obj\Debug\CP2.csproj.CoreCompileInputs.cache
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\obj\Debug\CP2.exe
-C:\Users\Jeroen\Documents\repos\NetChange\CP2\obj\Debug\CP2.pdb

@@ -12,7 +12,7 @@ class Program
     static void Main(string[] args)
     {
         Program p = new Program();
-        Console.Title = args[0];
+
         p.Initialize();
     }
 
@@ -21,11 +21,10 @@ class Program
         string[] input = Console.ReadLine().Split(' ');
         ownNumber = int.Parse(input[0]);
 
-        for (int i = 2; i < input.Length; i++)
+        for (int i = 0; i < input.Length; i++)
         {
             //read nodenumbers
         }
-        Console.ReadLine();
     }
 }
 
