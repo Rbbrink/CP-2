@@ -12,7 +12,7 @@ class Connection
     public StreamReader Read;
     public StreamWriter Write;
 
-    //Dit is de client
+    //Deze thread als client
     public Connection(int port)
     {
         TcpClient client = new TcpClient("localhost", port);
@@ -25,7 +25,12 @@ class Connection
         new Thread(ReaderThread).Start();
     }
 
-    //Dit is de server
+    public void SendMessage(string message)
+    {
+        Write.WriteLine(message);
+    }
+
+    //Deze thread als server
     public Connection(StreamReader read, StreamWriter write)
     {
         Read = read; Write = write;
@@ -44,4 +49,3 @@ class Connection
         catch { } // Verbinding is kennelijk verbroken
     }
 }
-
