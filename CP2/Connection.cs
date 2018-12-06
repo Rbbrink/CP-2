@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CP2
+class Connection
 {
-    class Connection
+    public void Connect()
     {
+
     }
 }
+
