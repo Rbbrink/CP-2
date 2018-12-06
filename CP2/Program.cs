@@ -23,7 +23,6 @@ class Program
 
         for (int i = 2; i < input.Length; i++)
         {
-
             //read nodenumbers
         }
         Console.ReadLine();
