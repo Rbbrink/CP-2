@@ -16,6 +16,8 @@ class Connection
         TcpClient client = new TcpClient("localhost", port);
         Read = new StreamReader(client.GetStream());
         Write = new StreamWriter(client.GetStream());
+        Write.AutoFlush = true;
+        //;asfsajfs
     }
 }
 
