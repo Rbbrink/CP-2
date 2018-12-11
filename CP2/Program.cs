@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 class Program
 {
     static public int thisport;
-    static public Dictionary<int, Connection> neighbours = new Dictionary<int, Connection>();
+    static public Dictionary<int, Connection> neighboursSEND = new Dictionary<int, Connection>(), neighboursGET = new Dictionary<int, Connection>();
+    static public List<int> connected = new List<int>();
 
     static void Main(string[] args)
     {
@@ -21,6 +21,12 @@ class Program
     {
         thisport = int.Parse(args[0]);
         Server server = new Server(thisport);
+        foreach (string s in args)
+        {
+            int i = int.Parse(s);
+            if (s != args[0] && !neighboursSEND.ContainsKey(i))            
+                neighboursSEND.Add(i, new Connection(i));            
+        }
 
         while (true)
         {
@@ -36,32 +42,35 @@ class Program
                 int serverport = int.Parse(parts[1]);
                 if (parts[0] == "B")
                 {
-                    if (!neighbours.ContainsKey(serverport))
+                    if (!neighboursSEND.ContainsKey(serverport))
                         Console.WriteLine("Error: unkown port number");
                     else
-                    {
-                        string message = "";
-                        for (int i = 2; i < parts.Length; i++)
-                            message += parts[i] + " ";
-                        neighbours[serverport].SendMessage(message);
-                    }
+                        SendMessage(parts, serverport);
                 }
                 else if (parts[0] == "C")
                 {
-                    if (!neighbours.ContainsKey(serverport))                    
-                        neighbours.Add(serverport, new Connection(serverport));                    
+                    if (!neighboursSEND.ContainsKey(serverport))                    
+                        neighboursSEND.Add(serverport, new Connection(serverport));                    
                     else
                         Console.WriteLine("Already connected");
                 }
                 else if (parts[0] == "D")
                 {
-                    if (neighbours.ContainsKey(serverport))
-                        neighbours.Remove(serverport);
+                    if (neighboursSEND.ContainsKey(serverport))
+                        neighboursSEND.Remove(serverport);
                     else
                         Console.WriteLine("Error: cannot break connection; not directly connected");
                 }
             }
         }
+    }
+
+    void SendMessage(string[] parts, int serverport)
+    {
+        string message = string.Empty;
+        for (int i = 2; i < parts.Length; i++)
+            message += parts[i] + " ";
+        neighboursSEND[serverport].SendMessage(message);
     }
 }
 
