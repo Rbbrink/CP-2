@@ -35,6 +35,14 @@ class Server
                 // Zet de nieuwe verbinding in de verbindingslijst            
                 Program.neighboursGET.Add(foreignport, new Connection(clientIn, clientOut));
             }
+            lock(Program.neighboursSEND)
+            {
+                if (!Program.neighboursSEND.ContainsKey(foreignport))
+                {
+                                    Console.WriteLine("aaaaa");
+                    Program.neighboursSEND.Add(foreignport, new Connection(foreignport));
+                }
+            }
         }
     }
 }

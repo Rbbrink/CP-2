@@ -27,8 +27,11 @@ class Connection
         new Thread(ReaderThread).Start();
     }
 
-    public void SendMessage(string message)
+    public void SendMessage(string[] parts)
     {
+        string message = string.Empty;
+        for (int i = 2; i < parts.Length; i++)
+            message += parts[i] + " ";
         Write.WriteLine(message);
     }
 
