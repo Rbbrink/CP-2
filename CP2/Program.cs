@@ -23,7 +23,7 @@ class Program
     {
         int nrconn = args.Length - 1;
         thisport = int.Parse(args[0]);
-        Server server = new Server(thisport);
+        Server server = new Server(thisport); 
         foreach (string s in args)
         {
             int i = int.Parse(s);

@@ -29,10 +29,10 @@ class Connection
 
     public void SendMessage(string[] parts)
     {
-        string message = string.Empty;
+        string message = "B";
         for (int i = 2; i < parts.Length; i++)
             message += parts[i] + " ";
-        Write.WriteLine("B" + message);
+        Write.WriteLine(message);
     }
 
     //Deze thread als server
@@ -50,7 +50,13 @@ class Connection
         {
             while (true)            
             {
-                Console.WriteLine(Read.ReadLine());    
+                string result = string.Empty;
+                string input = Read.ReadLine();
+                if(input.StartsWith("B"))
+                {
+                    result = input.Remove(0, 1);
+                }
+                Console.WriteLine(result);    
             }
         }
         catch { } // Verbinding is kennelijk verbroken
