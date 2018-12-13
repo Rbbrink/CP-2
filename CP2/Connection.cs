@@ -32,7 +32,7 @@ class Connection
         string message = string.Empty;
         for (int i = 2; i < parts.Length; i++)
             message += parts[i] + " ";
-        Write.WriteLine("B" + message);
+        Write.WriteLine("B " + message);
     }
 
     //Deze thread als server
@@ -50,7 +50,12 @@ class Connection
         {
             while (true)            
             {
-                Console.WriteLine(Read.ReadLine());    
+                string input = Read.ReadLine();
+                if (input.StartsWith("B "))
+                {
+
+                }
+                Console.WriteLine(input);    
             }
         }
         catch { } // Verbinding is kennelijk verbroken
