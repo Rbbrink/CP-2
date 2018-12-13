@@ -20,13 +20,18 @@ class Connection
         Write = new StreamWriter(client.GetStream());
         Write.AutoFlush = true;
 
+        //Laat server weten welke poort verbinding met hem maakt
         Write.WriteLine("Poort: " + Program.thisport);
 
+        Console.WriteLine("Connected with port " + port);
         new Thread(ReaderThread).Start();
     }
 
-    public void SendMessage(string message)
+    public void SendMessage(string[] parts)
     {
+        string message = string.Empty;
+        for (int i = 2; i < parts.Length; i++)
+            message += parts[i] + " ";
         Write.WriteLine(message);
     }
 
@@ -43,8 +48,8 @@ class Connection
     {
         try
         {
-            while (true)
-                Console.WriteLine(Read.ReadLine());
+            while (true)            
+                Console.WriteLine(Read.ReadLine());            
         }
         catch { } // Verbinding is kennelijk verbroken
     }

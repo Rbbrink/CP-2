@@ -19,7 +19,7 @@ class Server
     private void AcceptLoop(TcpListener handle)
     {
         while (true)
-        {
+        {            
             TcpClient client = handle.AcceptTcpClient();
             StreamReader clientIn = new StreamReader(client.GetStream());
             StreamWriter clientOut = new StreamWriter(client.GetStream());
@@ -28,10 +28,18 @@ class Server
             // De server weet niet wat de poort is van de client die verbinding maakt, de client geeft dus als onderdeel van het protocol als eerst een bericht met zijn poort
             int foreignport = int.Parse(clientIn.ReadLine().Split()[1]);
 
-            Console.WriteLine("Client maakt verbinding: " + foreignport);
+            if (!Program.neighboursGET.ContainsKey(foreignport))
+            {
+                Console.WriteLine("Client connects: " + foreignport);
 
-            // Zet de nieuwe verbinding in de verbindingslijst
-            Program.neighbours.Add(foreignport, new Connection(clientIn, clientOut));
+                // Zet de nieuwe verbinding in de verbindingslijst            
+                Program.neighboursGET.Add(foreignport, new Connection(clientIn, clientOut));
+            }
+            lock(Program.neighboursSEND)
+            {
+                if (!Program.neighboursSEND.ContainsKey(foreignport))                
+                    Program.neighboursSEND.Add(foreignport, new Connection(foreignport));                
+            }
         }
     }
 }
