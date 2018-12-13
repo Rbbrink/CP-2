@@ -32,7 +32,7 @@ class Connection
         string message = string.Empty;
         for (int i = 2; i < parts.Length; i++)
             message += parts[i] + " ";
-        Write.WriteLine(message);
+        Write.WriteLine("B" + message);
     }
 
     //Deze thread als server
@@ -49,7 +49,9 @@ class Connection
         try
         {
             while (true)            
-                Console.WriteLine(Read.ReadLine());            
+            {
+                Console.WriteLine(Read.ReadLine());    
+            }
         }
         catch { } // Verbinding is kennelijk verbroken
     }

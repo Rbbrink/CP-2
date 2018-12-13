@@ -38,7 +38,7 @@ class Server
             lock(Program.neighboursSEND)
             {
                 if (!Program.neighboursSEND.ContainsKey(foreignport))                
-                    Program.neighboursSEND.Add(foreignport, new Connection(foreignport));                
+                    Program.neighboursSEND.Add(foreignport, Tuple.Create(new Connection(foreignport), foreignport, 2));                
             }
         }
     }
