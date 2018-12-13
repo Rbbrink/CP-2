@@ -9,7 +9,7 @@ class Program
     static public int thisport;
     static public Dictionary<int, Tuple<Connection, int, int>> neighboursSEND = new Dictionary<int, Tuple<Connection, int, int>>();
     static public Dictionary<int, Connection> neighboursGET = new Dictionary<int, Connection>();
-    static public List<int> connected = new List<int>();
+    static public Dictionary<int, Tuple<int, int>> RoutingTable = new Dictionary<int, Tuple<int, int>>();
     bool complete = true;
 
     static void Main(string[] args)
@@ -29,9 +29,25 @@ class Program
             int i = int.Parse(s);
             lock(neighboursSEND)
             {
-                if (s != args[0] && !neighboursSEND.ContainsKey(i))            
-                    neighboursSEND.Add(i, Tuple.Create(new Connection(i), i, 1));     
+                if (s != args[0] && !neighboursSEND.ContainsKey(i))                     
+                    neighboursSEND.Add(i, Tuple.Create(new Connection(i), 1, i));                      
             }
+        }
+
+        foreach (KeyValuePair<int, Tuple<Connection, int, int>> a in neighboursSEND)
+        {
+            int i = a.Key;
+            if (!RoutingTable.ContainsKey(i))
+            {
+                Console.WriteLine("p.add " + i);
+                RoutingTable.Add(i, Tuple.Create(1, thisport));
+            }
+            else if (RoutingTable[i].Item1 > 1)
+            {
+                Console.WriteLine("p.replace " + i);
+                RoutingTable.Remove(i);
+                RoutingTable.Add(i, Tuple.Create(1, thisport));
+            }   
         }
 
         while (true)
@@ -73,7 +89,7 @@ class Program
                     else if (parts[0] == "C")
                     {                        
                         if (!neighboursSEND.ContainsKey(serverport))                    
-                            neighboursSEND.Add(serverport, Tuple.Create(new Connection(serverport), serverport, 1));                    
+                            neighboursSEND.Add(serverport, Tuple.Create(new Connection(serverport), 1, serverport));                    
                         else
                             Console.WriteLine("Already connected");
                     }

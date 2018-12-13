@@ -21,8 +21,12 @@ class Connection
         Write.AutoFlush = true;
 
         //Laat server weten welke poort verbinding met hem maakt
-        Write.WriteLine("Poort: " + Program.thisport);
-
+        Write.WriteLine("Port: " + Program.thisport);
+        foreach (KeyValuePair <int, Tuple<int, int>> a in Program.RoutingTable)
+        {
+            Write.WriteLine(a.Key + " " + a.Value.Item1 + " " + a.Value.Item2);
+        }
+        Write.WriteLine("END");
         Console.WriteLine("Connected with port " + port);
         new Thread(ReaderThread).Start();
     }
@@ -59,6 +63,6 @@ class Connection
                 Console.WriteLine(result);    
             }
         }
-        catch { } // Verbinding is kennelijk verbroken
+        catch { Console.WriteLine("t gaat fout");} // Verbinding is kennelijk verbroken
     }
 }
