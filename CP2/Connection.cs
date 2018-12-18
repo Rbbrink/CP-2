@@ -21,15 +21,19 @@ class Connection
         Write.AutoFlush = true;
 
         //Laat server weten welke poort verbinding met hem maakt
-        Write.WriteLine("Poort: " + Program.thisport);
-
+        Write.WriteLine("Port: " + Program.thisport);
+        foreach (KeyValuePair <int, Tuple<int, int>> a in Program.RoutingTable)
+        {
+            Write.WriteLine(a.Key + " " + a.Value.Item1 + " " + a.Value.Item2);
+        }
+        Write.WriteLine("END");
         Console.WriteLine("Connected with port " + port);
         new Thread(ReaderThread).Start();
     }
 
     public void SendMessage(string[] parts)
     {
-        string message = string.Empty;
+        string message = "B";
         for (int i = 2; i < parts.Length; i++)
             message += parts[i] + " ";
         Write.WriteLine(message);
@@ -49,8 +53,16 @@ class Connection
         try
         {
             while (true)            
-                Console.WriteLine(Read.ReadLine());            
+            {
+                string result = string.Empty;
+                string input = Read.ReadLine();
+                if(input.StartsWith("B"))
+                {
+                    result = input.Remove(0, 1);
+                }
+                Console.WriteLine(result);    
+            }
         }
-        catch { } // Verbinding is kennelijk verbroken
+        catch { Console.WriteLine("t gaat fout");} // Verbinding is kennelijk verbroken
     }
 }
