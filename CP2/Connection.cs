@@ -11,7 +11,7 @@ class Connection
 {
     public StreamReader Read;
     public StreamWriter Write;
-    int foreignport;
+    public int foreignport;
 
     //Deze thread als client
     public Connection(int port)
@@ -43,7 +43,7 @@ class Connection
 
     public void SendMessage(string[] parts)
     {
-        string message = "B";
+        string message = parts[0];
         for (int i = 2; i < parts.Length; i++)
             message += parts[i] + " ";
         Write.WriteLine(message);
@@ -69,6 +69,10 @@ class Connection
                 if(input.StartsWith("B"))
                 {
                     result = input.Remove(0, 1);
+                }
+                else if (input.StartsWith("D"))
+                {
+                    Program.RemoveConnection(foreignport);
                 }
                 else if(input == "RT")
                 {

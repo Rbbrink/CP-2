@@ -40,6 +40,7 @@ class Server
                 if (!Program.neighboursGET.ContainsKey(foreignport))
                 {
                     Program.neighboursGET.Add(foreignport, new Connection(clientIn, clientOut));
+                    Program.neighboursGET[foreignport].foreignport = foreignport;
                     Console.WriteLine("Client connects: " + foreignport);
 
                     // Zet de nieuwe verbinding in de verbindingslijst                   

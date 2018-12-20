@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\CP2"
+    "\\CP2",
+    "\\CP2\\obj",
+    "\\CP2\\obj\\Debug"
   ],
-  "SelectedNode": "\\CP2\\Server.cs",
+  "SelectedNode": "\\CP2\\Program.cs",
   "PreviewInSolutionExplorer": false
 }
