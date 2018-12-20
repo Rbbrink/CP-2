@@ -11,6 +11,7 @@ class Connection
 {
     public StreamReader Read;
     public StreamWriter Write;
+    int foreignport;
 
     //Deze thread als client
     public Connection(int port)
@@ -19,16 +20,25 @@ class Connection
         Read = new StreamReader(client.GetStream());
         Write = new StreamWriter(client.GetStream());
         Write.AutoFlush = true;
-
-        //Laat server weten welke poort verbinding met hem maakt
         Write.WriteLine("Port: " + Program.thisport);
-        foreach (KeyValuePair <int, Tuple<int, int>> a in Program.RoutingTable)
-        {
-            Write.WriteLine(a.Key + " " + a.Value.Item1 + " " + a.Value.Item2);
-        }
-        Write.WriteLine("END");
+        foreignport = port;
+
         Console.WriteLine("Connected with port " + port);
         new Thread(ReaderThread).Start();
+    }
+
+    public void SendRT()
+    {
+        //Laat server weten welke poort verbinding met hem maakt
+        Write.WriteLine("RT");
+        lock(Program.RoutingTable)
+        {
+            foreach (KeyValuePair <int, Tuple<int, int>> rtConnections in Program.RoutingTable)
+            {
+                Write.WriteLine(rtConnections.Key + " " + rtConnections.Value.Item1 + " " + rtConnections.Value.Item2);
+            }
+        }
+        Write.WriteLine("END");
     }
 
     public void SendMessage(string[] parts)
@@ -60,9 +70,14 @@ class Connection
                 {
                     result = input.Remove(0, 1);
                 }
-                Console.WriteLine(result);    
+                else if(input == "RT")
+                {
+                    //Program.server.ReadRT(foreignport);
+                }
+                if (result.Length > 0)
+                    Console.WriteLine(result);    
             }
         }
-        catch { Console.WriteLine("t gaat fout");} // Verbinding is kennelijk verbroken
+        catch {Console.WriteLine("Connection with port " + foreignport + " broke unexpectedly");} // Verbinding is kennelijk verbroken
     }
 }
