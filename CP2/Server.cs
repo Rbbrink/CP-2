@@ -61,6 +61,8 @@ class Server
         while (true)
         {
             string input = clientIn.ReadLine();
+            if ((Program.thisport == 1104 || Program.thisport == 1106) && foreignport == 1102)
+                Console.WriteLine(input);
             if (input == "END")
             {
                 lock(Program.neighboursSEND)
@@ -76,6 +78,7 @@ class Server
                 break;
             }
             string[] parts = input.Split(' ');
+            //pzero = destination & pone = distance
             int pzero = int.Parse(parts[0]), pone = int.Parse(parts[1]);
             lock(Program.RoutingTable)
             {
@@ -84,7 +87,7 @@ class Server
                     changed = true;
                     Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
                 }
-                else if (pone < Program.RoutingTable[pzero].Item1)
+                else if (pone + 1 < Program.RoutingTable[pzero].Item1)
                 {
                     changed = true;
                     Program.RoutingTable.Remove(pzero);
