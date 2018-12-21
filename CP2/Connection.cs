@@ -76,7 +76,7 @@ class Connection
                     {
                         
                         int Key = Program.RoutingTable[sendToPort].Item2;
-                        Program.neighboursSEND[Key].Item1.SendMessage(input);
+                        Program.neighboursSEND[Key].SendMessage(input);
                     }
                     else
                     {

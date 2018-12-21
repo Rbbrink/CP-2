@@ -102,41 +102,42 @@ class Program
                     else
                         (neighboursSEND[serverport]).SendMessage(parts);
                 }
-                //add connection
- else if (parts[0] == "C")
+            }
+            //add connection
+            else if (parts[0] == "C")
+            {
+                int serverport = int.Parse(parts[1]);
+                lock (neighboursSEND)
                 {
-                    int serverport = int.Parse(parts[1]);
-                    lock (neighboursSEND)
+                    if (!neighboursSEND.ContainsKey(serverport))
                     {
-                        if (!neighboursSEND.ContainsKey(serverport))
-                        {
-                            neighboursSEND.Add(serverport, new Connection(serverport));
-                            nrconn++;
-                        }
-                        else
-                            Console.WriteLine("Already connected");
+                        neighboursSEND.Add(serverport, new Connection(serverport));
+                        nrconn++;
                     }
-                }
-                //break connection
-                else if (parts[0] == "D")
-                {
-                    int serverport = int.Parse(parts[1]);
-                    lock (neighboursSEND)
-                    {
-                        lock (neighboursGET)
-                        {
-                            if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
-                            {
-                                neighboursSEND[serverport].SendMessage(parts);
-                                RemoveConnection(int.Parse(parts[1]));
-                            }
-                            else
-                                Console.WriteLine("Error: cannot break connection; not directly connected");
-                        }
-                    }
+                    else
+                        Console.WriteLine("Already connected");
                 }
             }
+            //break connection
+            else if (parts[0] == "D")
+            {
+                int serverport = int.Parse(parts[1]);
+                lock (neighboursSEND)
+                {
+                    lock (neighboursGET)
+                    {
+                        if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
+                        {
+                            neighboursSEND[serverport].SendMessage(parts);
+                            RemoveConnection(int.Parse(parts[1]));
+                        }
+                        else
+                            Console.WriteLine("Error: cannot break connection; not directly connected");
+                    }
+                }
+            }            
         }
+    }
 
     static public void RemoveConnection (int foreignport)
     {
