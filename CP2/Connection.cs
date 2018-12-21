@@ -50,6 +50,12 @@ class Connection
         Write.WriteLine(message);
     }
 
+    public void Disconnect(string [] parts)
+    {
+        SendMessage(parts);
+        Program.RemoveConnection(int.Parse(parts[1]));
+    }
+
     //Deze thread als server
     public Connection(StreamReader read, StreamWriter write, int port)
     {
@@ -90,10 +96,30 @@ class Connection
                 {
                     Program.RemoveConnection(foreignport);
                 }
-                else if(input[0] == "RT")
+                else if (input[0] == "RT")
                 {
                     ReadRT();                    
-                }   
+                }
+                else if (input[0] == "Delete")
+                {
+                    lock (Program.RoutingTable)
+                    {
+                        List<int> deletekeys = new List<int>();
+                        string[] parts = new string[]{"Delete", input[1]};
+                        foreach (KeyValuePair<int, Tuple<int, int>> rtkvp in Program.RoutingTable)
+                        {
+                            if (rtkvp.Key == int.Parse(input[1]) && rtkvp.Value.Item2 == foreignport)
+                            {
+                                SendMessage(parts);
+                                deletekeys.Add(rtkvp.Key);
+                            }
+                        }
+                        foreach (int key in deletekeys)
+                        {
+                            Program.RoutingTable.Remove(key);
+                        }
+                    }
+                }
             }
         }
         catch {Console.WriteLine("Connection with port " + foreignport + " broke unexpectedly");} // Verbinding is kennelijk verbroken

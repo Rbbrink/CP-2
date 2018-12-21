@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 class Program
 {
     static public int thisport;
-    int nrconn;
+    static int nrconn = 0;
     static public Dictionary<int, Connection> neighboursSEND = new Dictionary<int, Connection>();
     static public Dictionary<int, Connection> neighboursGET = new Dictionary<int, Connection>();
     static public Dictionary<int, Tuple<int, int>> RoutingTable = new Dictionary<int, Tuple<int, int>>();
@@ -125,8 +125,7 @@ class Program
                         {
                             if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
                             {
-                                neighboursSEND[serverport].SendMessage(parts);
-                                RemoveConnection(int.Parse(parts[1]));
+                                neighboursSEND[serverport].Disconnect(parts);                                
                             }
                             else
                                 Console.WriteLine("Error: cannot break connection; not directly connected");
@@ -141,8 +140,29 @@ class Program
     {
         neighboursGET.Remove(foreignport);
         neighboursSEND.Remove(foreignport);
-        Console.WriteLine("Conncetion broken with port " + foreignport);
-        //nrconn--;
+        Console.WriteLine("Connection broken with port " + foreignport);
+        nrconn--;
+        lock (RoutingTable)
+        {
+            List<int> deletekeys = new List<int>();
+            foreach (KeyValuePair<int, Tuple<int, int>> rtkvp in RoutingTable)
+            {
+                if (rtkvp.Value.Item2 == foreignport)
+                    deletekeys.Add(rtkvp.Key);
+            }
+            foreach (int key in deletekeys)
+            {
+                RoutingTable.Remove(key);
+            }
+        }
+        lock (neighboursSEND)
+        {
+            string[] parts = new string[]{"Delete", foreignport.ToString()};
+            foreach (KeyValuePair<int, Connection> kvp in neighboursSEND)
+            {
+                neighboursSEND[kvp.Key].SendMessage(parts);
+            }
+        }
     }
 
     public void AddNeighboursToRT()
