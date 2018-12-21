@@ -46,21 +46,12 @@ class Program
             {
                 if (!complete)
                 {   
-                    Console.WriteLine("All connections set up");
                     complete = true;
-
-                    lock (RoutingTable)
-                    {
-                        foreach (KeyValuePair<int, Tuple<int, int>> kvp in RoutingTable)
-                        {
-                            Console.WriteLine(kvp.Key + " " + kvp.Value.Item1 + " " + kvp.Value.Item2);
-                        }
-                    }
+                    Console.WriteLine("All connections set up");
                     lock (neighboursSEND)
                     {
                         foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
                         {
-                            Console.WriteLine(rtkvp.Key);
                             neighboursSEND[rtkvp.Key].Item1.SendRT();
                         }
                     }
@@ -88,7 +79,7 @@ class Program
                 {
                     foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
                     {
-                        neighboursSEND[rtkvp.Key].Item1.SendRT();
+                        //neighboursSEND[rtkvp.Key].Item1.SendRT();
                     }
                 }
             

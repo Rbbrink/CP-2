@@ -29,7 +29,7 @@ class Connection
 
     public void SendRT()
     {
-        Console.WriteLine("SendRT");
+        Console.WriteLine("SendRT " + foreignport);
         //Laat server weten welke poort verbinding met hem maakt
         Write.WriteLine("RT");
         lock(Program.RoutingTable)
@@ -90,13 +90,10 @@ class Connection
     {
         // de server weet dat de client klaar is met zijn table doorsturen als hij END ontvangt
         bool changed = false;
+        Console.WriteLine("ReadRT");
         while (true)
         {
-            Console.WriteLine("ReadRT");
             string input = Read.ReadLine();
-            if (foreignport == 1102)
-            {
-            }
             if (input == "END")
             {
                 lock (Program.neighboursSEND)
@@ -106,7 +103,7 @@ class Connection
                         Console.WriteLine("changed");
                         foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in Program.neighboursSEND)
                         {
-                            //Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
+                            Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
                         }
                     }
                 }
@@ -121,7 +118,7 @@ class Connection
                     changed = true;
                     Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
                 }
-                else if (pone < Program.RoutingTable[pzero].Item1)
+                else if (pone + 1 < Program.RoutingTable[pzero].Item1)
                 {
                     changed = true;
                     Program.RoutingTable.Remove(pzero);
