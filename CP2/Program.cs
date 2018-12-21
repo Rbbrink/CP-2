@@ -75,15 +75,15 @@ class Program
             //show routing table
             if (parts[0] == "R")
             {
-                lock(neighboursSEND)
+                lock (neighboursSEND)
                 {
                     foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
                     {
                         //neighboursSEND[rtkvp.Key].Item1.SendRT();
                     }
                 }
-            
-                lock(RoutingTable)
+
+                lock (RoutingTable)
                 {
                     foreach (KeyValuePair<int, Tuple<int, int>> kvp in RoutingTable)
                     {
@@ -92,51 +92,55 @@ class Program
                 }
 
             }
-            else
+            else if (parts[0] == "B")
             {
                 int serverport = int.Parse(parts[1]);
                 //send message
-                if (parts[0] == "B")
+
+                if (!RoutingTable.ContainsKey(serverport))
+                    Console.WriteLine("Error: unknown port number");
+                else
+                {
+                    int Key = RoutingTable[serverport].Item2;
+                    neighboursSEND[Key].Item1.SendMessage(parts);
+                }
+            }
+
+            //add connection
+            else if (parts[0] == "C")
+            {
+                int serverport = int.Parse(parts[1]);
+                lock (neighboursSEND)
                 {
                     if (!neighboursSEND.ContainsKey(serverport))
-                        Console.WriteLine("Error: unkown port number");
-                    else
-                        (neighboursSEND[serverport]).Item1.SendMessage(parts);
-                }
-                //add connection
-                else if (parts[0] == "C")
-                {       
-                    lock(neighboursSEND)
                     {
-                        if (!neighboursSEND.ContainsKey(serverport))                    
-                        {
-                            neighboursSEND.Add(serverport, Tuple.Create(new Connection(serverport), 1, serverport));   
-                            nrconn++;
-                        }
-                        else 
-                            Console.WriteLine("Already connected");
+                        neighboursSEND.Add(serverport, Tuple.Create(new Connection(serverport), 1, serverport));
+                        nrconn++;
                     }
+                    else
+                        Console.WriteLine("Already connected");
                 }
-                //break connection
-                else if (parts[0] == "D")
+            }
+            //break connection
+            else if (parts[0] == "D")
+            {
+                int serverport = int.Parse(parts[1]);
+                lock (neighboursSEND)
                 {
-                    lock(neighboursSEND)
+                    lock (neighboursGET)
                     {
-                        lock(neighboursGET)
+                        if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
                         {
-                            if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
-                            {
-                                (neighboursSEND[serverport]).Item1.SendMessage(parts);
-                                RemoveConnection(int.Parse(parts[1]));
-                            }
-                            else 
-                                Console.WriteLine("Error: cannot break connection; not directly connected");
+                            neighboursSEND[serverport].Item1.SendMessage(parts);
+                            RemoveConnection(int.Parse(parts[1]));
                         }
+                        else
+                            Console.WriteLine("Error: cannot break connection; not directly connected");
                     }
                 }
             }
+            }
         }
-    }
 
     static public void RemoveConnection (int foreignport)
     {
