@@ -45,8 +45,8 @@ class Connection
     public void SendMessage(string[] parts)
     {
         string message = parts[0];
-        for (int i = 2; i < parts.Length; i++)
-            message += parts[i] + " ";
+        for (int i = 1; i < parts.Length; i++)
+            message += " " + parts[i];
         Write.WriteLine(message);
     }
 
@@ -68,16 +68,29 @@ class Connection
             while (true)            
             {
                 string result = string.Empty;
-                string input = Read.ReadLine();
-                if(input.StartsWith("B"))
+                string[] input = Read.ReadLine().Split(' ');
+                if(input[0] == "B")
                 {
-                    Console.WriteLine(input.Remove(0, 1));
+                    int sendToPort = int.Parse(input[1]);
+                    if (sendToPort != Program.thisport)
+                    {
+                        
+                        int Key = Program.RoutingTable[sendToPort].Item2;
+                        Program.neighboursSEND[Key].Item1.SendMessage(input);
+                    }
+                    else
+                    {
+                        for (int i = 2; i < input.Length; i++)
+                        {
+                            Console.Write(input[i] + " ");
+                        }
+                    }
                 }
-                else if (input.StartsWith("D"))
+                else if (input[0] == "D")
                 {
                     Program.RemoveConnection(foreignport);
                 }
-                else if(input == "RT")
+                else if(input[0] == "RT")
                 {
                     ReadRT();                    
                 }   

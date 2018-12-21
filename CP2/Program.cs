@@ -88,11 +88,14 @@ class Program
                 }
 
             }
-            else
+            else if (parts[0] == "B")
             {
                 int serverport = int.Parse(parts[1]);
                 //send message
-                if (parts[0] == "B")
+
+                if (!RoutingTable.ContainsKey(serverport))
+                    Console.WriteLine("Error: unknown port number");
+                else
                 {
                     if (!neighboursSEND.ContainsKey(serverport))
                         Console.WriteLine("Error: unkown port number");
@@ -100,39 +103,40 @@ class Program
                         (neighboursSEND[serverport]).SendMessage(parts);
                 }
                 //add connection
-                else if (parts[0] == "C")
-                {       
-                    lock(neighboursSEND)
+ else if (parts[0] == "C")
+                {
+                    int serverport = int.Parse(parts[1]);
+                    lock (neighboursSEND)
                     {
-                        if (!neighboursSEND.ContainsKey(serverport))                    
+                        if (!neighboursSEND.ContainsKey(serverport))
                         {
-                            neighboursSEND.Add(serverport, new Connection(serverport));   
+                            neighboursSEND.Add(serverport, new Connection(serverport));
                             nrconn++;
                         }
-                        else 
+                        else
                             Console.WriteLine("Already connected");
                     }
                 }
                 //break connection
                 else if (parts[0] == "D")
                 {
-                    lock(neighboursSEND)
+                    int serverport = int.Parse(parts[1]);
+                    lock (neighboursSEND)
                     {
-                        lock(neighboursGET)
+                        lock (neighboursGET)
                         {
                             if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
                             {
-                                (neighboursSEND[serverport]).SendMessage(parts);
+                                neighboursSEND[serverport].SendMessage(parts);
                                 RemoveConnection(int.Parse(parts[1]));
                             }
-                            else 
+                            else
                                 Console.WriteLine("Error: cannot break connection; not directly connected");
                         }
                     }
                 }
             }
         }
-    }
 
     static public void RemoveConnection (int foreignport)
     {
