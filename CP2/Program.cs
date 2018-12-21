@@ -48,11 +48,20 @@ class Program
                 {   
                     Console.WriteLine("All connections set up");
                     complete = true;
+
                     lock (RoutingTable)
                     {
                         foreach (KeyValuePair<int, Tuple<int, int>> kvp in RoutingTable)
                         {
                             Console.WriteLine(kvp.Key + " " + kvp.Value.Item1 + " " + kvp.Value.Item2);
+                        }
+                    }
+                    lock (neighboursSEND)
+                    {
+                        foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
+                        {
+                            Console.WriteLine(rtkvp.Key);
+                            neighboursSEND[rtkvp.Key].Item1.SendRT();
                         }
                     }
                 }
@@ -75,6 +84,22 @@ class Program
             //show routing table
             if (parts[0] == "R")
             {
+                lock(neighboursSEND)
+                {
+                    foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
+                    {
+                        Console.WriteLine(rtkvp.Key);
+                        neighboursSEND[rtkvp.Key].Item1.SendRT();
+                    }
+                }
+            
+                lock(RoutingTable)
+                {
+                    foreach (KeyValuePair<int, Tuple<int, int>> kvp in RoutingTable)
+                    {
+                        Console.WriteLine(kvp.Key + " " + kvp.Value.Item1 + " " + kvp.Value.Item2);
+                    }
+                }
 
             }
             else
