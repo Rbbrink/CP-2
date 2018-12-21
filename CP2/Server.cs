@@ -38,10 +38,9 @@ class Server
             {
                 if (!Program.neighboursGET.ContainsKey(foreignport))
                 {
+                    // Zet de nieuwe verbinding in de verbindingslijst   
                     Program.neighboursGET.Add(foreignport, new Connection(clientIn, clientOut, foreignport));
-                    Console.WriteLine("Client connects: " + foreignport);
-
-                    // Zet de nieuwe verbinding in de verbindingslijst                   
+                    Console.WriteLine("Client connects: " + foreignport);                                    
                 }
             }
             lock(Program.neighboursSEND)
