@@ -88,7 +88,6 @@ class Program
                 {
                     foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
                     {
-                        Console.WriteLine(rtkvp.Key);
                         neighboursSEND[rtkvp.Key].Item1.SendRT();
                     }
                 }

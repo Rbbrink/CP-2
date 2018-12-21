@@ -42,6 +42,50 @@ class Connection
         Write.WriteLine("END");
     }
 
+    public void SendMessage(string[] parts)
+    {
+        string message = parts[0];
+        for (int i = 2; i < parts.Length; i++)
+            message += parts[i] + " ";
+        Write.WriteLine(message);
+    }
+
+    //Deze thread als server
+    public Connection(StreamReader read, StreamWriter write, int port)
+    {
+        foreignport = port;
+        Read = read; 
+        Write = write;
+        Write.WriteLine("BClient connects: " + Program.thisport);
+        // Start het reader-loopje
+        new Thread(ReaderThread).Start();
+    }
+
+    public void ReaderThread()
+    {
+        try
+        {
+            while (true)            
+            {
+                string result = string.Empty;
+                string input = Read.ReadLine();
+                if(input.StartsWith("B"))
+                {
+                    Console.WriteLine(input.Remove(0, 1));
+                }
+                else if (input.StartsWith("D"))
+                {
+                    Program.RemoveConnection(foreignport);
+                }
+                else if(input == "RT")
+                {
+                    ReadRT();                    
+                }   
+            }
+        }
+        catch {Console.WriteLine("Connection with port " + foreignport + " broke unexpectedly");} // Verbinding is kennelijk verbroken
+    }
+
     public void ReadRT()
     {
         // de server weet dat de client klaar is met zijn table doorsturen als hij END ontvangt
@@ -85,49 +129,5 @@ class Connection
                 }
             }
         }
-    }
-
-    public void SendMessage(string[] parts)
-    {
-        string message = parts[0];
-        for (int i = 2; i < parts.Length; i++)
-            message += parts[i] + " ";
-        Write.WriteLine(message);
-    }
-
-    //Deze thread als server
-    public Connection(StreamReader read, StreamWriter write, int port)
-    {
-        foreignport = port;
-        Read = read; 
-        Write = write;
-        Write.WriteLine("BClient connects: " + Program.thisport);
-        // Start het reader-loopje
-        new Thread(ReaderThread).Start();
-    }
-
-    public void ReaderThread()
-    {
-        try
-        {
-            while (true)            
-            {
-                string result = string.Empty;
-                string input = Read.ReadLine();
-                if(input.StartsWith("B"))
-                {
-                    Console.WriteLine(input.Remove(0, 1));
-                }
-                else if (input.StartsWith("D"))
-                {
-                    Program.RemoveConnection(foreignport);
-                }
-                else if(input == "RT")
-                {
-                    ReadRT();                    
-                }   
-            }
-        }
-        catch {Console.WriteLine("Connection with port " + foreignport + " broke unexpectedly");} // Verbinding is kennelijk verbroken
     }
 }
