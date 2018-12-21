@@ -29,6 +29,7 @@ class Connection
 
     public void SendRT()
     {
+        Console.WriteLine("SendRT");
         //Laat server weten welke poort verbinding met hem maakt
         Write.WriteLine("RT");
         lock(Program.RoutingTable)
@@ -41,6 +42,51 @@ class Connection
         Write.WriteLine("END");
     }
 
+    public void ReadRT()
+    {
+        // de server weet dat de client klaar is met zijn table doorsturen als hij END ontvangt
+        bool changed = false;
+        while (true)
+        {
+            Console.WriteLine("ReadRT");
+            string input = Read.ReadLine();
+            if (foreignport == 1102)
+            {
+            }
+            if (input == "END")
+            {
+                lock (Program.neighboursSEND)
+                {
+                    if (changed)
+                    {
+                        Console.WriteLine("changed");
+                        foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in Program.neighboursSEND)
+                        {
+                            //Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
+                        }
+                    }
+                }
+                break;
+            }
+            string[] parts = input.Split(' ');
+            int pzero = int.Parse(parts[0]), pone = int.Parse(parts[1]);
+            lock (Program.RoutingTable)
+            {
+                if (!Program.RoutingTable.ContainsKey(pzero))
+                {
+                    changed = true;
+                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                }
+                else if (pone < Program.RoutingTable[pzero].Item1)
+                {
+                    changed = true;
+                    Program.RoutingTable.Remove(pzero);
+                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                }
+            }
+        }
+    }
+
     public void SendMessage(string[] parts)
     {
         string message = "B";
@@ -50,8 +96,9 @@ class Connection
     }
 
     //Deze thread als server
-    public Connection(StreamReader read, StreamWriter write)
+    public Connection(StreamReader read, StreamWriter write, int port)
     {
+        foreignport = port;
         Read = read; Write = write;
 
         // Start het reader-loopje
@@ -72,7 +119,7 @@ class Connection
                 }
                 else if(input == "RT")
                 {
-                    //Program.server.ReadRT(foreignport);
+                    ReadRT();
                 }
                 if (result.Length > 0)
                     Console.WriteLine(result);    
