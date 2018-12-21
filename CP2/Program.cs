@@ -162,9 +162,8 @@ class Program
                         {
                             if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
                             {
-                                neighboursSEND.Remove(serverport);
-                                neighboursGET.Remove(serverport);
-                                nrconn--;
+                                (neighboursSEND[serverport]).Item1.SendMessage(parts);
+                                RemoveConnection(int.Parse(parts[1]));
                             }
                             else 
                                 Console.WriteLine("Error: cannot break connection; not directly connected");
@@ -173,6 +172,14 @@ class Program
                 }
             }
         }
+    }
+
+    static public void RemoveConnection (int foreignport)
+    {
+        Console.WriteLine("Conncetion broken with port " + foreignport);
+        neighboursGET.Remove(foreignport);
+        neighboursSEND.Remove(foreignport);
+        nrconn--;
     }
 }
 
