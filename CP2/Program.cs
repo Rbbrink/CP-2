@@ -101,8 +101,8 @@ class Program
                     Console.WriteLine("Error: unknown port number");
                 else
                 {
-                    int Key = RoutingTable[serverport].Item2;
-                    neighboursSEND[Key].Item1.SendMessage(parts);
+                    int key = RoutingTable[serverport].Item2;
+                    neighboursSEND[key].Item1.SendMessage(parts);
                 }
             }
 

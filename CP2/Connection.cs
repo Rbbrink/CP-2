@@ -75,8 +75,8 @@ class Connection
                     if (sendToPort != Program.thisport)
                     {
                         
-                        int Key = Program.RoutingTable[sendToPort].Item2;
-                        Program.neighboursSEND[Key].Item1.SendMessage(input);
+                        int key = Program.RoutingTable[sendToPort].Item2;
+                        Program.neighboursSEND[key].Item1.SendMessage(input);
                     }
                     else
                     {
