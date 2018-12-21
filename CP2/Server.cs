@@ -32,18 +32,15 @@ class Server
             // De server weet niet wat de poort is van de client die verbinding maakt, de client geeft dus als onderdeel van het protocol als eerst een bericht met zijn poort
             int foreignport = int.Parse(clientIn.ReadLine().Split()[1]);
             // De client stuurt zijn eigen routing table door, en de server update zijn eigen routingtable als hij een betere connectie langs ziet komen
-            if (clientIn.ReadLine() == "RT")
-                ReadRT(foreignport);
-
+            //if (clientIn.ReadLine() == "RT")
+                //ReadRT(foreignport);
+            // Zet de nieuwe verbinding in de verbindingslijst    
             lock(Program.neighboursGET)
             {
                 if (!Program.neighboursGET.ContainsKey(foreignport))
                 {
                     Program.neighboursGET.Add(foreignport, new Connection(clientIn, clientOut));
-                    Program.neighboursGET[foreignport].foreignport = foreignport;
-                    Console.WriteLine("Client connects: " + foreignport);
-
-                    // Zet de nieuwe verbinding in de verbindingslijst                   
+                    Program.neighboursGET[foreignport].foreignport = foreignport;         
                 }
             }
             lock(Program.neighboursSEND)
@@ -71,7 +68,7 @@ class Server
                     {                    
                         foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in Program.neighboursSEND)
                         {
-                            Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
+                            //Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
                         }
                     }   
                 }

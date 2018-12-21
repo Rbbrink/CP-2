@@ -28,7 +28,7 @@ class Program
         server = new Server(thisport); 
         foreach (string s in args)
         {
-            if (s != args[0])
+            if (s == args[0])
                 continue;
             int i = int.Parse(s);
             lock(neighboursSEND)
@@ -157,7 +157,7 @@ class Program
         {
             foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in neighboursSEND)
             {
-                neighboursSEND[rtkvp.Key].Item1.SendRT();
+                //neighboursSEND[rtkvp.Key].Item1.SendRT();
             }
         }
     }
