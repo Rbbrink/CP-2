@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 class Program
 {
     static public int thisport;
-    int nrconn;
     static public Dictionary<int, Connection> neighboursSEND = new Dictionary<int, Connection>();
     static public Dictionary<int, Connection> neighboursGET = new Dictionary<int, Connection>();
     static public Dictionary<int, Tuple<int, int>> RoutingTable = new Dictionary<int, Tuple<int, int>>();
-    bool complete = true;
+    static public Dictionary<int, List<Tuple<int, int>>> backups = new Dictionary<int, List<Tuple<int, int>>>();
     static public Server server;
 
     static void Main(string[] args)
@@ -23,7 +22,6 @@ class Program
 
     public void Initialize(string[] args)
     {
-        nrconn = args.Length - 1;
         thisport = int.Parse(args[0]);
         server = new Server(thisport); 
         foreach (string s in args)
@@ -39,39 +37,20 @@ class Program
         }
 
         AddNeighboursToRT();
+        SendUpdatedRT();
 
         while (true)
         {
-            if (neighboursGET.Count == nrconn && neighboursSEND.Count == nrconn)
-            {
-                if (!complete)
-                {   
-                    //if connections are made to all neighbours, share your routingtable with them
-                    complete = true;
-                    Console.WriteLine("All connections set up");
-                    lock (neighboursSEND)
-                    {
-                        foreach (KeyValuePair<int, Connection> rtkvp in neighboursSEND)
-                        {
-                            neighboursSEND[rtkvp.Key].SendRT();
-                        }
-                    }
-                }
-            }
-            else if (complete)
-            {
-                Console.WriteLine("New connections pending");
-                complete = false;
-            }
             checkinput();
         }
     }
 
     public void checkinput()
     {
-        if (Console.KeyAvailable)
+        string input = Console.ReadLine();
+        if (input.StartsWith("R") || input.StartsWith("B ") || input.StartsWith("C ") || input.StartsWith("D ") || input.StartsWith("E"))
         {
-            string input = Console.ReadLine();
+
             string[] parts = input.Split();
             //show routing table
             if (parts[0] == "R")
@@ -88,6 +67,10 @@ class Program
                 }
 
             }
+            else if(parts[0] == "E")
+            {
+                SendUpdatedRT();
+            }
             else 
             {
                 int serverport = int.Parse(parts[1]);
@@ -95,7 +78,7 @@ class Program
                 if (parts[0] == "B")
                 {
                     if (!RoutingTable.ContainsKey(serverport))
-                        Console.WriteLine("Error: unknown port number");
+                        Console.WriteLine("Poort " + parts[1] + " is niet bekend");
                     else
                     {
                         int key = RoutingTable[serverport].Item2;
@@ -104,17 +87,21 @@ class Program
                 }
                 //add connection 
                 else if (parts[0] == "C")
-                {                    
+                {         
+                    bool update = false;
                     lock (neighboursSEND)
                     {
                         if (!neighboursSEND.ContainsKey(serverport))
                         {
                             neighboursSEND.Add(serverport, new Connection(serverport));
-                            nrconn++;
+                            update = true;
                         }
                         else
-                            Console.WriteLine("Already connected");
+                            Console.WriteLine("//Already connected");
                     }
+                    if (update)
+                        SendUpdatedRT();                         
+
                 }
                 //break connection
                 else if (parts[0] == "D")
@@ -125,11 +112,18 @@ class Program
                         {
                             if (neighboursSEND.ContainsKey(serverport) && neighboursGET.ContainsKey(serverport))
                             {
-                                neighboursSEND[serverport].SendMessage(parts);
-                                RemoveConnection(int.Parse(parts[1]));
+                                neighboursSEND[serverport].Disconnect();       
+                                lock (neighboursSEND)
+                                {		
+                                    foreach (KeyValuePair<int, Connection> kvp in neighboursSEND)
+                                    {
+                                        neighboursSEND[kvp.Key].SendMessage(new string[]{"U"});
+                                    }                            
+                                }
+                                Console.WriteLine("Verbroken: " + parts[1]);
                             }
                             else
-                                Console.WriteLine("Error: cannot break connection; not directly connected");
+                                Console.WriteLine("Poort " + parts[1] + " is niet bekend");
                         }
                     }
                 }            
@@ -141,8 +135,28 @@ class Program
     {
         neighboursGET.Remove(foreignport);
         neighboursSEND.Remove(foreignport);
-        Console.WriteLine("Conncetion broken with port " + foreignport);
-        //nrconn--;
+        Console.WriteLine("//Connection broken with port " + foreignport);
+        lock (RoutingTable)
+        {
+            List<int> deletekeys = new List<int>();
+            foreach (KeyValuePair<int, Tuple<int, int>> rtkvp in RoutingTable)
+            {
+                if (rtkvp.Value.Item2 == foreignport)
+                    deletekeys.Add(rtkvp.Key);
+            }
+            foreach (int key in deletekeys)
+            {
+                RoutingTable.Remove(key);
+            }
+        }
+        string[] parts = new string[]{"Del", foreignport.ToString()};
+        lock (neighboursSEND)
+        {
+            foreach (KeyValuePair<int, Connection> kvp in neighboursSEND)
+            {
+                neighboursSEND[kvp.Key].SendMessage(parts);
+            }
+        }        
     }
 
     public void AddNeighboursToRT()
@@ -155,17 +169,22 @@ class Program
                 foreach (KeyValuePair<int, Connection> directNeighbours in neighboursSEND)
                 {
                     int i = directNeighbours.Key;
-                    if (!RoutingTable.ContainsKey(i))
-                    {
-                        Console.WriteLine("p.add " + i);
-                        RoutingTable.Add(i, Tuple.Create(1, i));
-                    }
-                    else if (RoutingTable[i].Item1 > 1)
-                    {
-                        Console.WriteLine("p.replace " + i);
-                        RoutingTable[i] = Tuple.Create(1, i);
-                    }   
+                    if (!RoutingTable.ContainsKey(i))                    
+                        RoutingTable.Add(i, Tuple.Create(1, i));                    
+                    else if (RoutingTable[i].Item1 > 1)                    
+                        RoutingTable[i] = Tuple.Create(1, i);                    
                 }
+            }
+        }
+    }
+
+    static public void SendUpdatedRT()
+    {
+        lock (neighboursSEND)
+        {
+            foreach (KeyValuePair<int, Connection> rtkvp in neighboursSEND)
+            {
+                neighboursSEND[rtkvp.Key].SendRT();
             }
         }
     }
