@@ -10,7 +10,6 @@ class Program
     static public Dictionary<int, Connection> neighboursSEND = new Dictionary<int, Connection>();
     static public Dictionary<int, Connection> neighboursGET = new Dictionary<int, Connection>();
     static public Dictionary<int, Tuple<int, int>> RoutingTable = new Dictionary<int, Tuple<int, int>>();
-    static public Dictionary<int, List<Tuple<int, int>>> backups = new Dictionary<int, List<Tuple<int, int>>>();
     static public Server server;
 
     static void Main(string[] args)
@@ -37,10 +36,8 @@ class Program
                     neighboursSEND.Add(i, new Connection(i));                      
             }
         }
-
         AddNeighboursToRT();
         SendUpdatedRT();
-
         while (true)
         {
             checkinput();
@@ -104,7 +101,17 @@ class Program
                             Console.WriteLine("//Already connected");
                     }
                     if (update)
-                        SendUpdatedRT();                         
+                    {
+                        lock (Program.RoutingTable)
+                        {
+                            foreach(KeyValuePair<int, Tuple<int, int>> a in Program.RoutingTable)
+                            {
+                                if (a.Key > 60000)
+                                    Console.WriteLine("yeet1 " + thisport + " " + a.Key);
+                            }
+                        }
+                        SendUpdatedRT(); 
+                    }
 
                 }
                 //Break connection
@@ -173,12 +180,8 @@ class Program
             {
                 RoutingTable[thisport] = Tuple.Create(0, thisport);
                 foreach (KeyValuePair<int, Connection> directNeighbours in neighboursSEND)
-                {
-                    int i = directNeighbours.Key;
-                    if (!RoutingTable.ContainsKey(i))                    
-                        RoutingTable.Add(i, Tuple.Create(1, i));                    
-                    else if (RoutingTable[i].Item1 > 1)                    
-                        RoutingTable[i] = Tuple.Create(1, i);                    
+                {               
+                    RoutingTable[directNeighbours.Key] = Tuple.Create(1, directNeighbours.Key);      
                 }
             }
         }
@@ -187,6 +190,14 @@ class Program
     //Send your routingtable
     static public void SendUpdatedRT()
     {
+        lock (Program.RoutingTable)
+        {
+            foreach(KeyValuePair<int, Tuple<int, int>> a in Program.RoutingTable)
+            {
+                if (a.Key > 60000)
+                    Console.WriteLine("yeet4 " + thisport + " " + a.Key);
+            }
+        }
         lock (neighboursSEND)
         {
             foreach (KeyValuePair<int, Connection> rtkvp in neighboursSEND)

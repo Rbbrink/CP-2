@@ -45,6 +45,7 @@ class Connection
     //Turn the given array in one string and then send it through the StreamWriter
     public void SendMessage(string[] parts)
     {
+
         string message = parts[0];
         for (int i = 1; i < parts.Length; i++)
             message += " " + parts[i];
@@ -75,7 +76,7 @@ class Connection
         bool broken = false;
         while(true)
         {
-            try
+            //try
             {
                 if (broken)
                     Console.WriteLine("//Connection with port " + foreignport + " regained");
@@ -191,8 +192,10 @@ class Connection
             //The server knows knows that the client is done with sending their routingtable when he receives END
             if (input == "END")
             {
-                if (changed)                
-                    Program.SendUpdatedRT();                              
+                if (changed)
+                    {
+                        Program.SendUpdatedRT();
+                    }
                 break;
             }
             string[] parts = input.Split(' ');
@@ -206,14 +209,13 @@ class Connection
                 {
                     Console.WriteLine("//New: " + pzero);
                     changed = true;
-                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
                 }
                 else if (pone + 1 < Program.RoutingTable[pzero].Item1)
                 {
                     changed = true;
                     Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
-                    Program.RoutingTable.Remove(pzero);
-                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
                 }
             }
         }
