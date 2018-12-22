@@ -24,13 +24,13 @@ class Connection
         Write.WriteLine("Port: " + Program.thisport);
         foreignport = port;
 
-        Console.WriteLine("Connected with port " + port);
-        new Thread(ReaderThread).Start();
+        Console.WriteLine("Verbonden: " + port);
+        //new Thread(ReaderThread).Start();
     }
 
     public void SendRT()
     {
-        Console.WriteLine("SendRT " + foreignport);
+        Console.WriteLine("//SendRT " + foreignport);
         Write.WriteLine("RT");
         lock(Program.RoutingTable)
         {
@@ -50,8 +50,9 @@ class Connection
         Write.WriteLine(message);
     }
 
-    public void Disconnect(string [] parts)
+    public void Disconnect()
     {
+        string[] parts = new string[]{"D", foreignport.ToString()};
         SendMessage(parts);
         Program.RemoveConnection(int.Parse(parts[1]));
     }
@@ -69,83 +70,95 @@ class Connection
 
     public void ReaderThread()
     {
-        try
+        bool broken = false;
+        while(true)
         {
-            while (true)            
+            try
             {
-                string result = string.Empty;
-                string[] input = Read.ReadLine().Split(' ');
-                if(input[0] == "B")
+                if (broken)
+                    Console.WriteLine("//Connection with port " + foreignport + " regained");
+                broken = false;
+                while (true)            
                 {
-                    int sendToPort = int.Parse(input[1]);
-                    if (sendToPort != Program.thisport)
+                    string result = string.Empty;
+                    string[] input = Read.ReadLine().Split(' ');
+                    if(input[0] == "B")
                     {
-                        
-                        int Key = Program.RoutingTable[sendToPort].Item2;
-                        Program.neighboursSEND[Key].SendMessage(input);
-                    }
-                    else
-                    {
-                        for (int i = 2; i < input.Length; i++)
+                        int sendToPort = int.Parse(input[1]);
+                        if (sendToPort != Program.thisport)
+                        {                        
+                            int Key = Program.RoutingTable[sendToPort].Item2;
+                            Program.neighboursSEND[Key].SendMessage(input);
+                            Console.WriteLine("Bericht voor " + input[1] + " doorgestuurd naar " + Key);
+                        }
+                        else
                         {
-                            Console.Write(input[i] + " ");
+                            string message = string.Empty;
+                            for (int i = 2; i < input.Length; i++)
+                            {
+                                message += input[i] + " ";
+                            }
+                            Console.WriteLine(message);
                         }
                     }
-                }
-                else if (input[0] == "D")
-                {
-                    Program.RemoveConnection(foreignport);
-                }
-                else if (input[0] == "RT")
-                {
-                    ReadRT();                    
-                }
-                else if (input[0] == "Delete")
-                {
-                    lock (Program.RoutingTable)
+                    else if (input[0] == "D")                    
+                        Program.RemoveConnection(foreignport);                    
+                    else if (input[0] == "RT")                    
+                        ReadRT();     
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    else if (false)//input[0] == "Del")
                     {
                         List<int> deletekeys = new List<int>();
-                        string[] parts = new string[]{"Delete", input[1]};
-                        foreach (KeyValuePair<int, Tuple<int, int>> rtkvp in Program.RoutingTable)
+                        string[] parts = new string[]{"Del", input[1]};
+                        lock (Program.RoutingTable)
                         {
-                            if (rtkvp.Key == int.Parse(input[1]) && rtkvp.Value.Item2 == foreignport)
+                            foreach (KeyValuePair<int, Tuple<int, int>> rtkvp in Program.RoutingTable)
                             {
-                                SendMessage(parts);
-                                deletekeys.Add(rtkvp.Key);
+                                if (rtkvp.Key == int.Parse(input[1]) && rtkvp.Value.Item2 == foreignport)                                
+                                    deletekeys.Add(rtkvp.Key);                                
+                            }
+                            foreach (int key in deletekeys)
+                            {
+                                Program.RoutingTable.Remove(key);
                             }
                         }
-                        foreach (int key in deletekeys)
+                        if (deletekeys.Count > 0)
                         {
-                            Program.RoutingTable.Remove(key);
+                            Program.SendUpdatedRT();
+                            lock (Program.neighboursSEND)
+                            {
+                                foreach (KeyValuePair<int, Connection> kvp in Program.neighboursSEND)
+                                {
+                                    Program.neighboursSEND[kvp.Key].SendMessage(parts);
+                                }
+                            }
                         }
                     }
                 }
+            }        
+            catch 
+            {
+                if (!broken)
+                    Console.WriteLine("//Connection with port " + foreignport + " broke unexpectedly"); // Verbinding is kennelijk verbroken
+                else
+                    Console.WriteLine("//Retrying connection with porth " + foreignport);
+                broken = true;
+                Thread.Sleep(10);
             }
         }
-        catch {Console.WriteLine("Connection with port " + foreignport + " broke unexpectedly");} // Verbinding is kennelijk verbroken
     }
 
     public void ReadRT()
     {
         // de server weet dat de client klaar is met zijn table doorsturen als hij END ontvangt
         bool changed = false;
-        Console.WriteLine("ReadRT");
         while (true)
         {
             string input = Read.ReadLine();
             if (input == "END")
             {
-                lock (Program.neighboursSEND)
-                {
-                    if (changed)
-                    {
-                        Console.WriteLine("changed");
-                        foreach (KeyValuePair<int, Connection> rtkvp in Program.neighboursSEND)
-                        {
-                            Program.neighboursSEND[rtkvp.Key].SendRT();
-                        }
-                    }
-                }
+                if (changed)                
+                    Program.SendUpdatedRT();                              
                 break;
             }
             string[] parts = input.Split(' ');
@@ -154,16 +167,23 @@ class Connection
             {
                 if (!Program.RoutingTable.ContainsKey(pzero))
                 {
+                    Console.WriteLine("//New: " + pzero);
                     changed = true;
                     Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
                 }
                 else if (pone + 1 < Program.RoutingTable[pzero].Item1)
                 {
                     changed = true;
+                    Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
                     Program.RoutingTable.Remove(pzero);
                     Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
                 }
+                else
+                {
+                   
+                }
             }
         }
+        Console.WriteLine("//ReadRT");
     }
 }
