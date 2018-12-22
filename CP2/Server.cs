@@ -29,9 +29,8 @@ class Server
             clientOut = new StreamWriter(client.GetStream());
             clientOut.AutoFlush = true;
 
-            // De server weet niet wat de poort is van de client die verbinding maakt, de client geeft dus als onderdeel van het protocol als eerst een bericht met zijn poort
+            //The server doens't know what the port is that makes connection, the client gives as a part of the protocol first a message with his portnumber
             int foreignport = int.Parse(clientIn.ReadLine().Split()[1]);
-            // De client stuurt zijn eigen routing table door, en de server update zijn eigen routingtable als hij een betere connectie langs ziet komen
 
             //Add incoming client to the list of neighbours with the connection to send input to you
             lock(Program.neighboursGET)
