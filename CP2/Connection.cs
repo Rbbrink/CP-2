@@ -153,7 +153,7 @@ class Connection
                         Program.neighboursSEND[foreignport].SendRT();                                        
                 }
             }        
-            if (false)//catch 
+            //catch 
             {
                 if (!broken)
                     Console.WriteLine("//Connection with port " + foreignport + " broke unexpectedly");
@@ -181,22 +181,31 @@ class Connection
                 break;
             }
             string[] parts = input.Split(' ');
-            int pzero = int.Parse(parts[0]), pone = int.Parse(parts[1]);
-            if (pzero > 60000)
-                Console.WriteLine("yeeeeeeeet " + input);
-            lock (Program.RoutingTable)
+            Console.WriteLine(parts[0]);
+            int pzero;
+            bool why = int.TryParse(parts[0], out pzero);
+            if (!why)
+                Console.WriteLine(input + "aaaaaaaaaaaaaaaaaaaaaaa");
+            else
             {
-                if (!Program.RoutingTable.ContainsKey(pzero))
+                pzero = int.Parse(parts[0]);
+                int pone = int.Parse(parts[1]);            
+                if (pzero > 60000)
+                    Console.WriteLine("yeeeeeeeet " + input + " " + foreignport);
+                lock (Program.RoutingTable)
                 {
-                    Console.WriteLine("//New: " + pzero);
-                    changed = true;
-                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
-                }
-                else if (pone + 1 < Program.RoutingTable[pzero].Item1)
-                {
-                    changed = true;
-                    Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
-                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
+                    if (!Program.RoutingTable.ContainsKey(pzero))
+                    {
+                        Console.WriteLine("//New: " + pzero);
+                        changed = true;
+                        Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
+                    }
+                    else if (pone + 1 < Program.RoutingTable[pzero].Item1)
+                    {
+                        changed = true;
+                        Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
+                        Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
+                    }
                 }
             }
         }
