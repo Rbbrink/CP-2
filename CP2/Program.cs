@@ -22,7 +22,7 @@ class Program
     public void Initialize(string[] args)
     {
         thisport = int.Parse(args[0]);
-        server = new Server(thisport);
+        server = new Server(thisport); //s
         
         //Add all the given neighbours to your preferred neighbour list
         foreach (string s in args)
