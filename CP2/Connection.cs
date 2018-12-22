@@ -76,7 +76,7 @@ class Connection
         bool broken = false;
         while(true)
         {
-            //try
+            try
             {
                 if (broken)
                     Console.WriteLine("//Connection with port " + foreignport + " regained");
