@@ -12,6 +12,7 @@ class Connection
     public StreamReader Read;
     public StreamWriter Write;
     public int foreignport;
+    public object senderlock = new object();
 
     //This thread as client (SEND)
     public Connection(int port)
@@ -30,26 +31,31 @@ class Connection
     //Sends RT to make it known that he is sending a routingtable and the sends it
     public void SendRT()
     {
-        Write.WriteLine("RT");
-        lock(Program.RoutingTable)
+        lock (senderlock)
         {
-            foreach (KeyValuePair <int, Tuple<int, int>> rtConnections in Program.RoutingTable)
+            Write.WriteLine("RT");
+            lock(Program.RoutingTable)
             {
-                Write.WriteLine(rtConnections.Key + " " + rtConnections.Value.Item1 + " " + rtConnections.Value.Item2);
+                foreach (KeyValuePair <int, Tuple<int, int>> rtConnections in Program.RoutingTable)
+                {
+                    Write.WriteLine(rtConnections.Key + " " + rtConnections.Value.Item1 + " " + rtConnections.Value.Item2);
+                }
             }
+            Write.WriteLine("END");
         }
-        Write.WriteLine("END");
         Console.WriteLine("//SendRT " + foreignport);
     }
 
     //Turn the given array in one string and then send it through the StreamWriter
     public void SendMessage(string[] parts)
     {
-
         string message = parts[0];
         for (int i = 1; i < parts.Length; i++)
             message += " " + parts[i];
-        Write.WriteLine(message);
+        lock (senderlock)
+        {
+            Write.WriteLine(message);
+        }
     }
 
     //Send message to port that will be disconnected to let them know that the connection will be ended
@@ -161,14 +167,13 @@ class Connection
                                 Program.neighboursSEND[kvp.Key].SendMessage(new string[]{"U"});
                             }                            
                         }
-
                     }
                     //Send your routingtable
                     else if (input[0] == "U")                   
                         Program.neighboursSEND[foreignport].SendRT();                                        
                 }
             }        
-            //catch 
+            catch 
             {
                 if (!broken)
                     Console.WriteLine("//Connection with port " + foreignport + " broke unexpectedly");
@@ -197,33 +202,22 @@ class Connection
                 break;
             }
             string[] parts = input.Split(' ');
-            Console.WriteLine(parts[0]);
-            int pzero;
-            bool why = int.TryParse(parts[0], out pzero);
-            if (!why)
-                Console.WriteLine(input + "aaaaaaaaaaaaaaaaaaaaaaa");
-            else
+            int pzero = int.Parse(parts[0]), pone = int.Parse(parts[1]);            
+            lock (Program.RoutingTable)
             {
-                pzero = int.Parse(parts[0]);
-                int pone = int.Parse(parts[1]);            
-                if (pzero > 60000)
-                    Console.WriteLine("yeeeeeeeet " + input + " " + foreignport);
-                lock (Program.RoutingTable)
+                if (!Program.RoutingTable.ContainsKey(pzero))
                 {
-                    if (!Program.RoutingTable.ContainsKey(pzero))
-                    {
-                        Console.WriteLine("//New: " + pzero);
-                        changed = true;
-                        Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
-                    }
-                    else if (pone + 1 < Program.RoutingTable[pzero].Item1)
-                    {
-                        changed = true;
-                        Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
-                        Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
-                    }
+                    Console.WriteLine("//New: " + pzero);
+                    changed = true;
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
                 }
-            }
+                else if (pone + 1 < Program.RoutingTable[pzero].Item1)
+                {
+                    changed = true;
+                    Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
+                }
+            }            
         }
         Console.WriteLine("//ReadRT " + foreignport);
     }

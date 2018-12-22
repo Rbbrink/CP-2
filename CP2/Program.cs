@@ -102,14 +102,6 @@ class Program
                     }
                     if (update)
                     {
-                        lock (Program.RoutingTable)
-                        {
-                            foreach(KeyValuePair<int, Tuple<int, int>> a in Program.RoutingTable)
-                            {
-                                if (a.Key > 60000)
-                                    Console.WriteLine("yeet1 " + thisport + " " + a.Key);
-                            }
-                        }
                         SendUpdatedRT(); 
                     }
 
@@ -190,14 +182,6 @@ class Program
     //Send your routingtable
     static public void SendUpdatedRT()
     {
-        lock (Program.RoutingTable)
-        {
-            foreach(KeyValuePair<int, Tuple<int, int>> a in Program.RoutingTable)
-            {
-                if (a.Key > 60000)
-                    Console.WriteLine("yeet4 " + thisport + " " + a.Key);
-            }
-        }
         lock (neighboursSEND)
         {
             foreach (KeyValuePair<int, Connection> rtkvp in neighboursSEND)
