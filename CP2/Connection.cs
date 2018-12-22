@@ -19,6 +19,7 @@ class Connection
         TcpClient client = new TcpClient("localhost", port);
         Read = new StreamReader(client.GetStream());
         Write = new StreamWriter(client.GetStream());
+        //Laat server weten welke poort verbinding met hem maakt
         Write.AutoFlush = true;
         Write.WriteLine("Port: " + Program.thisport);
         foreignport = port;
@@ -30,7 +31,6 @@ class Connection
     public void SendRT()
     {
         Console.WriteLine("SendRT " + foreignport);
-        //Laat server weten welke poort verbinding met hem maakt
         Write.WriteLine("RT");
         lock(Program.RoutingTable)
         {
@@ -114,9 +114,9 @@ class Connection
                     if (changed)
                     {
                         Console.WriteLine("changed");
-                        foreach (KeyValuePair<int, Tuple<Connection, int, int>> rtkvp in Program.neighboursSEND)
+                        foreach (KeyValuePair<int, Connection> rtkvp in Program.neighboursSEND)
                         {
-                            Program.neighboursSEND[rtkvp.Key].Item1.SendRT();
+                            Program.neighboursSEND[rtkvp.Key].SendRT();
                         }
                     }
                 }
