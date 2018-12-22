@@ -43,6 +43,7 @@ class Connection
 
     public void SendMessage(string[] parts)
     {
+
         string message = parts[0];
         for (int i = 1; i < parts.Length; i++)
             message += " " + parts[i];
@@ -71,7 +72,7 @@ class Connection
         bool broken = false;
         while(true)
         {
-            try
+            //try
             {
                 if (broken)
                     Console.WriteLine("//Connection with port " + foreignport + " regained");
@@ -114,7 +115,6 @@ class Connection
                         ReadRT();
                     else if (input[0] == "Del")
                     {
-                        Console.WriteLine("1111");
                         List<int> deletekeys = new List<int>();
                         lock (Program.RoutingTable)
                         {
@@ -149,13 +149,11 @@ class Connection
                         }
 
                     }
-                    else if (input[0] == "U")                    
-                    { 
-                        Program.neighboursSEND[foreignport].SendRT();
-                    }                    
+                    else if (input[0] == "U")                   
+                        Program.neighboursSEND[foreignport].SendRT();                                        
                 }
             }        
-            catch 
+            if (false)//catch 
             {
                 if (!broken)
                     Console.WriteLine("//Connection with port " + foreignport + " broke unexpectedly");
@@ -176,26 +174,29 @@ class Connection
             string input = Read.ReadLine();
             if (input == "END")
             {
-                if (changed)                
-                    Program.SendUpdatedRT();                              
+                if (changed)
+                    {
+                        Program.SendUpdatedRT();
+                    }
                 break;
             }
             string[] parts = input.Split(' ');
             int pzero = int.Parse(parts[0]), pone = int.Parse(parts[1]);
+            if (pzero > 60000)
+                Console.WriteLine("yeeeeeeeet " + input);
             lock (Program.RoutingTable)
             {
                 if (!Program.RoutingTable.ContainsKey(pzero))
                 {
                     Console.WriteLine("//New: " + pzero);
                     changed = true;
-                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
                 }
                 else if (pone + 1 < Program.RoutingTable[pzero].Item1)
                 {
                     changed = true;
                     Console.WriteLine("Afstand naar " + pzero + " is nu " + (pone + 1) + " via " + foreignport);
-                    Program.RoutingTable.Remove(pzero);
-                    Program.RoutingTable.Add(pzero, Tuple.Create(pone + 1, foreignport));
+                    Program.RoutingTable[pzero] = Tuple.Create(pone + 1, foreignport);
                 }
             }
         }
