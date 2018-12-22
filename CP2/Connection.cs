@@ -13,7 +13,7 @@ class Connection
     public StreamWriter Write;
     public int foreignport;
 
-    //Deze thread als client (SEND)
+    //This thread as client (SEND)
     public Connection(int port)
     {
         TcpClient client = new TcpClient("localhost", port);
@@ -27,6 +27,7 @@ class Connection
         Console.WriteLine("Verbonden: " + port);
     }
 
+    //Sends RT to make it known that he is sending a routingtable and the sends it
     public void SendRT()
     {
         Write.WriteLine("RT");
@@ -41,6 +42,7 @@ class Connection
         Console.WriteLine("//SendRT " + foreignport);
     }
 
+    //Turn the given array in one string and then send it through the StreamWriter
     public void SendMessage(string[] parts)
     {
 
@@ -50,13 +52,14 @@ class Connection
         Write.WriteLine(message);
     }
 
+    //Send message to port that will be disconnected to let them know that the connection will be ended
     public void Disconnect()
     {
         SendMessage(new string[]{"D", foreignport.ToString()});
         Program.RemoveConnection(foreignport);
     }
 
-    //Deze thread als server (GET)
+    //This thread as server (GET)
     public Connection(StreamReader read, StreamWriter write, int port)
     {
         foreignport = port;
@@ -67,6 +70,7 @@ class Connection
         new Thread(ReaderThread).Start();
     }
 
+    //Reads the input from the port with which he is connected and then acts upon it
     public void ReaderThread()
     {
         bool broken = false;
@@ -77,13 +81,19 @@ class Connection
                 if (broken)
                     Console.WriteLine("//Connection with port " + foreignport + " regained");
                 broken = false;
+
+                //Keep checking if input has appeared
                 while (true)            
                 {
                     string result = string.Empty;
                     string[] input = Read.ReadLine().Split(' ');
-                    if(input[0] == "B")
+
+                    //Send the message to the given port
+                    if (input[0] == "B")
                     {
                         int sendToPort = int.Parse(input[1]);
+                        //Check if its for you, if yes print it 
+                        //if not send it to your preferred neighbour with the connection to the port for which message is
                         if (sendToPort != Program.thisport)
                         {                        
                             int Key = Program.RoutingTable[sendToPort].Item2;
@@ -100,19 +110,23 @@ class Connection
                             Console.WriteLine(message);
                         }
                     }
+                    //Disconnect with the given port and as your neighbours to send their routingtable
                     else if (input[0] == "D")                
-                        {
-                            Program.RemoveConnection(foreignport); 
-                            lock (Program.neighboursSEND)
-                            {		
-                                foreach (KeyValuePair<int, Connection> kvp in Program.neighboursSEND)
-                                {
-                                    Program.neighboursSEND[kvp.Key].SendMessage(new string[]{"U"});
-                                }                            
-                            }
+                    {
+                        Program.RemoveConnection(foreignport); 
+                        lock (Program.neighboursSEND)
+                        {		
+                            foreach (KeyValuePair<int, Connection> kvp in Program.neighboursSEND)
+                            {
+                                Program.neighboursSEND[kvp.Key].SendMessage(new string[]{"U"});
+                            }                            
                         }
+                    }
+                    //Read the incoming routingtable
                     else if (input[0] == "RT")                    
                         ReadRT();
+
+                    //Delete the connections which contain the given port
                     else if (input[0] == "Del")
                     {
                         List<int> deletekeys = new List<int>();
@@ -149,6 +163,7 @@ class Connection
                         }
 
                     }
+                    //Send your routingtable
                     else if (input[0] == "U")                   
                         Program.neighboursSEND[foreignport].SendRT();                                        
                 }
@@ -167,11 +182,12 @@ class Connection
 
     void ReadRT()
     {
-        // de server weet dat de client klaar is met zijn table doorsturen als hij END ontvangt
+        // The server knows when the routingtable is fully sent when it receives a END signal
         bool changed = false;
         while (true)
         {
             string input = Read.ReadLine();
+            //The server knows knows that the client is done with sending their routingtable when he receives END
             if (input == "END")
             {
                 if (changed)
