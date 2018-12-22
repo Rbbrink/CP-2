@@ -33,7 +33,7 @@ class Server
             int foreignport = int.Parse(clientIn.ReadLine().Split()[1]);
             // De client stuurt zijn eigen routing table door, en de server update zijn eigen routingtable als hij een betere connectie langs ziet komen
 
-
+            //Add incoming client to the list of neighbours with the connection to send input to you
             lock(Program.neighboursGET)
             {
                 if (!Program.neighboursGET.ContainsKey(foreignport))
@@ -43,6 +43,7 @@ class Server
                     Console.WriteLine("Client connects: " + foreignport);                                    
                 }
             }
+            //Add the incoming client to the list of neighbours with the connection that is able to send input to them 
             lock(Program.neighboursSEND)
             {
                 if (!Program.neighboursSEND.ContainsKey(foreignport))                

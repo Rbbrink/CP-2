@@ -23,7 +23,9 @@ class Program
     public void Initialize(string[] args)
     {
         thisport = int.Parse(args[0]);
-        server = new Server(thisport); 
+        server = new Server(thisport);
+        
+        //Add all the given neighbours to your preferred neighbour list
         foreach (string s in args)
         {
             if (s == args[0])
@@ -45,6 +47,7 @@ class Program
         }
     }
 
+    //Check for user input and act accordingly
     public void checkinput()
     {
         string input = Console.ReadLine();
@@ -52,7 +55,7 @@ class Program
         {
 
             string[] parts = input.Split();
-            //show routing table
+            //Print routing table
             if (parts[0] == "R")
             {            
                 lock(RoutingTable)
@@ -67,6 +70,7 @@ class Program
                 }
 
             }
+            //Send routingtable
             else if(parts[0] == "E")
             {
                 SendUpdatedRT();
@@ -74,7 +78,7 @@ class Program
             else 
             {
                 int serverport = int.Parse(parts[1]);
-                //send message
+                //Send message to the given port
                 if (parts[0] == "B")
                 {
                     if (!RoutingTable.ContainsKey(serverport))
@@ -85,7 +89,7 @@ class Program
                         (neighboursSEND[key]).SendMessage(parts);
                     }
                 }
-                //add connection 
+                //Add connection 
                 else if (parts[0] == "C")
                 {         
                     bool update = false;
@@ -103,7 +107,7 @@ class Program
                         SendUpdatedRT();                         
 
                 }
-                //break connection
+                //Break connection
                 else if (parts[0] == "D")
                 {                    
                     lock (neighboursSEND)
@@ -131,6 +135,7 @@ class Program
         }
     }
 
+    //Removes all connection which make use of the given port
     static public void RemoveConnection (int foreignport)
     {
         neighboursGET.Remove(foreignport);
@@ -159,6 +164,7 @@ class Program
         }        
     }
 
+    //Add your neighbours to your routingtable
     public void AddNeighboursToRT()
     {
         lock(neighboursSEND)
@@ -178,6 +184,7 @@ class Program
         }
     }
 
+    //Send your routingtable
     static public void SendUpdatedRT()
     {
         lock (neighboursSEND)
